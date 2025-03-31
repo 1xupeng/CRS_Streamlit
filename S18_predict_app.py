@@ -147,7 +147,7 @@ def load_app(model_index: int):
     data = pd.read_excel("./feature_display_info.xlsx")
     feature_dict = data.set_index('feature_name').to_dict('index')
 
-    st.title(f"{model_name.upper()} Model Analyze")
+    st.title(f"CRS Prediction")
     input_features = list()
     print(feature_names)
     for feature_name in feature_names:
