@@ -1,9 +1,12 @@
-name: Daily Visit
+name: Visit Page Daily and on Commit
 
-# 定义触发条件：每天定时运行
+# 定义触发条件：每天午夜运行一次，以及每次 push 时运行一次
 on:
   schedule:
-    - cron: '0,30 * * * *'  # 每小时的第 0 分钟和第 30 分钟运行
+    - cron: '0 0 * * *'  # 每天午夜（00:00）运行
+  push:                   # 每次 push 时运行
+    branches:             # 可以指定分支，例如只在 main 分支触发
+      - main
 
 # 定义工作流的作业
 jobs:
