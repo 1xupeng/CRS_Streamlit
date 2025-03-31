@@ -107,8 +107,10 @@ def draw_force_plot(i: int, sample: list):
 
 def load_app(model_index: int):
     if load_existed:
-        P = pickle.load(open(data_pickle_name, "rb"))
-        feature = pickle.load(open(feature_pickles[model_index], "rb"))
+        with open(data_pickle_name, "rb") as f:
+            P = pickle.load(f)
+        with open(feature_pickles[model_index], "rb") as f:
+            feature = pickle.load(f)
     else:
         P = Load_Data()  # 数据
         pickle.dump(P, open(data_pickle_name, "wb"))

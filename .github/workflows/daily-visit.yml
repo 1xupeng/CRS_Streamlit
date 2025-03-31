@@ -1,0 +1,20 @@
+name: Daily Visit
+
+# 定义触发条件：每天定时运行
+on:
+  schedule:
+    - cron: '0,30 * * * *'  # 每小时的第 0 分钟和第 30 分钟运行
+
+# 定义工作流的作业
+jobs:
+  visit-page:
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Visit web page
+        run: |
+          # 使用 curl 访问指定的网页
+          curl -I -s -o /dev/null -w "%{http_code}" https://crs-predition.streamlit.app/
