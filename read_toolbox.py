@@ -1,4 +1,3 @@
-from Functions import *
 import copy
 
 sampler_str = "RandomUnderSampler"
@@ -11,7 +10,7 @@ feature_pickle_names = [f"{model_name}_{feature_pickle}" for model_name in name]
 top_lens = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
 model_pickle_names = [f"__{model_name}_saved.pkl" for model_name in name]
 data_pickle_name = "__"+data_pickle 
-load_existed = False
+load_existed = True
 feature_pickles = ["__" + n for n in feature_pickle_names]
 
 import pickle
