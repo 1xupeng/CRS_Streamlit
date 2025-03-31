@@ -3,21 +3,33 @@ name: Visit Page Daily and on Commit
 # 定义触发条件：每天午夜运行一次，以及每次 push 时运行一次
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天午夜（00:00）运行
+    - cron: '0 */10 * * *'  # 每10个小时运行一次
   push:                   # 每次 push 时运行
     branches:             # 可以指定分支，例如只在 main 分支触发
       - main
-
-# 定义工作流的作业
 jobs:
-  visit-page:
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
-
+  human-visit:
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Visit web page
-        run: |
-          # 使用 curl 访问指定的网页
-          curl -I -s -o /dev/null -w "%{http_code}" https://crs-predition.streamlit.app/
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium webdriver-manager
+        
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser
+        
+    - name: Run human-like visit script
+      run: |
+        python web_visit.py
