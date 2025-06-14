@@ -13,6 +13,7 @@ model_pickle_names = [f"__{model_name}_saved.pkl" for model_name in name]
 data_pickle_name = "__"+data_pickle 
 load_existed = True
 feature_pickles = ["__" + n for n in feature_pickle_names]
+streamlit_app_name = "CKM Mortality Predictor for ICU"
 
 import pickle
 
