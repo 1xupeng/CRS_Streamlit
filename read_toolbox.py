@@ -5,15 +5,15 @@ sampler_str = "RandomUnderSampler"
 sampler_suffix = sampler_str
 data_pickle = "current_origin_data.pickle" if sampler_suffix == "" else f"current_{sampler_suffix}_data.pickle"
 
-name = ['AdaBoost', 'ANN', 'DT', 'ET', 'GBM', 'KNN', 'LightGBM', 'LR', 'RF', 'SVM', 'XGboost']
+name = ['AdaBoost', 'RF', 'DT', 'ET', 'GBM', 'KNN', 'LightGBM', 'LR', 'ANN', 'SVM', 'XGboost']
 feature_pickle = "current_origin_feature.pickle" if sampler_suffix == "" else f"current_{sampler_suffix}_feature.pickle"
 feature_pickle_names = [f"{model_name}_{feature_pickle}" for model_name in name]
-top_lens = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+top_lens = [6, 9, 6, 6, 6, 6, 6, 6, 6, 6, 6]
 model_pickle_names = [f"__{model_name}_saved.pkl" for model_name in name]
 data_pickle_name = "__"+data_pickle 
 load_existed = True
 feature_pickles = ["__" + n for n in feature_pickle_names]
-streamlit_app_name = "CKM Mortality Predictor for ICU"
+streamlit_app_name = "CRAS Mortality Predictor for ICU"
 
 import pickle
 
