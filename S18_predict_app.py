@@ -1,9 +1,21 @@
 import numpy as np
 import pandas as pd
 import shap.plots
-
-from read_toolbox import *
+import pickle
+import copy
+from pathlib import Path
+import matplotlib.pyplot as plt
 import streamlit as st
+
+# 明确导入所有在 func_configs.py 中定义的全局变量
+from func_configs import (
+    MM, load_existed, top_lens, name, sampler_suffix, data_pickle_name, 
+    feature_pickles, feature_pickle_names, model_pickle_names, random_seed
+)
+
+# 假设 read_toolbox 中包含了 Load_Data, save_read_data, P.standarlize 等所需的工具函数和类
+from read_toolbox import *
+
 
 def prepare_model(i: int):
     if load_existed:
@@ -37,6 +49,7 @@ def prepare_model(i: int):
         with open(model_pickle_names[i], 'rb') as f:
             model = pickle.load(f)
     else:
+        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[i])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[i],"wb") as f:
@@ -73,6 +86,7 @@ def draw_force_plot(i: int, sample: list):
         with open(model_pickle_names[i], 'rb') as f:
             model = pickle.load(f)
     else:
+        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[i])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[i],"wb") as f:
@@ -87,6 +101,7 @@ def draw_force_plot(i: int, sample: list):
     predict_prob = model.predict_proba(sample)[:, 1]
     # sample_index = 0
     plt.figure()
+    # 使用 P.seed，该变量也假设通过 read_toolbox 间接导入或在 P 对象中可用
     model_test_explainer = shap.Explainer(model4shap, masker=x_train, feature_names=x_name, seed=P.seed)
     model_test_shap = model_test_explainer(sample)[0]
     model_test_shap.display_data = np.around(P.standarlize.reversed(sample, index), decimals=2)
@@ -96,6 +111,7 @@ def draw_force_plot(i: int, sample: list):
                      matplotlib=True, show=False)
 
     literal_feature_name = "".join([char for char in x_name if char.isalpha()])
+    # 使用导入的全局变量 name 和 sampler_suffix
     file_name = f'./picture/{sampler_suffix}_/17_{name[i]}_{literal_feature_name}_predict_force_plot.png'
     if Path(file_name).exists():
         Path(file_name).unlink()
@@ -107,10 +123,8 @@ def draw_force_plot(i: int, sample: list):
 
 def load_app(model_index: int):
     if load_existed:
-        with open(data_pickle_name, "rb") as f:
-            P = pickle.load(f)
-        with open(feature_pickles[model_index], "rb") as f:
-            feature = pickle.load(f)
+        P = pickle.load(open(data_pickle_name, "rb"))
+        feature = pickle.load(open(feature_pickles[model_index], "rb"))
     else:
         P = Load_Data()  # 数据
         pickle.dump(P, open(data_pickle_name, "wb"))
@@ -136,6 +150,7 @@ def load_app(model_index: int):
         with open(model_pickle_names[model_index], 'rb') as f:
             model = pickle.load(f)
     else:
+        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[model_index])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[model_index],"wb") as f:
@@ -144,10 +159,13 @@ def load_app(model_index: int):
     model_name = name[model_index]
     feature_names = x_name
 
+    # 假设 feature_display_info.xlsx 存在
     data = pd.read_excel("./feature_display_info.xlsx")
     feature_dict = data.set_index('feature_name').to_dict('index')
 
-    st.title(f"{streamlit_app_name}")
+    # Streamlit 标题修改
+    st.title("CKM Mortality Predictor for ICU")
+
     input_features = list()
     print(feature_names)
     for feature_name in feature_names:
@@ -203,13 +221,40 @@ def load_app(model_index: int):
         input_features.append(feature_i)
 
     # print(input_features)
+    i # 保留与原始文件一致的变量
     if st.button("Execute Model Analyze"):
         force_plot_path, predict_prob = draw_force_plot(i=model_index, sample=input_features)
-        st.write("Result:", np.around(predict_prob, 2))
+
+        # 获取预测概率数值
+        prob_value = predict_prob[0]
+
+        # -------------------------------------------------------
+        # 最优阈值设定
+        optimal_threshold = 0.5526
+        # -------------------------------------------------------
+
+        st.markdown("### Prediction Result")
+        st.write(f"**Predicted Mortality Probability:** {prob_value:.4f} ({(prob_value*100):.2f}%)")
+
+        # 逻辑判断：显示高危或低危
+        if prob_value > optimal_threshold:
+            # 高风险提示 (红色背景)
+            st.error(f"⚠️ **HIGH RISK** (Probability > {optimal_threshold})")
+            st.markdown(f"**Clinical Implication:** The patient's mortality risk exceeds the optimal decision threshold ({optimal_threshold}). Intensive monitoring is recommended.")
+        else:
+            # 低风险提示 (绿色背景)
+            st.success(f"✅ **LOW RISK** (Probability ≤ {optimal_threshold})")
+            st.markdown(f"**Clinical Implication:** The patient's mortality risk is below the optimal decision threshold.")
+
+        st.write("---")
+        st.write("**SHAP Force Plot Interpretation:**")
         st.image(force_plot_path)
 
 
 if "__main__" == __name__:
     load_app(1)
+# sample = [0,2,0,1,70.62,1]
+# draw_force_plot(1,sample)
+
 # sample = [0,2,0,1,70.62,1]
 # draw_force_plot(1,sample)
