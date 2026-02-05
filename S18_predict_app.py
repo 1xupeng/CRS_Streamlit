@@ -7,13 +7,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import streamlit as st
 
-# 明确导入所有在 func_configs.py 中定义的全局变量
+# Explicit imports from func_configs as required by the S18app environment
 from func_configs import (
     MM, load_existed, top_lens, name, sampler_suffix, data_pickle_name, 
     feature_pickles, feature_pickle_names, model_pickle_names, random_seed
 )
 
-# 假设 read_toolbox 中包含了 Load_Data, save_read_data, P.standarlize 等所需的工具函数和类
 from read_toolbox import *
 
 
@@ -22,13 +21,12 @@ def prepare_model(i: int):
         P = pickle.load(open(data_pickle_name, "rb"))
         feature = pickle.load(open(feature_pickles[i], "rb"))
     else:
-        P = Load_Data()  # 数据
+        P = Load_Data()  # Data
         pickle.dump(P, open(data_pickle_name, "wb"))
         feature = save_read_data().read(feature_pickle_names[i])
         pickle.dump(feature, open(feature_pickles[i], "wb"))
 
-
-    # 提取特征
+    # Extract features
     index, x_name = feature.index[:], feature.x_name[:]
 
     for i_, feature_name in enumerate(x_name):
@@ -36,7 +34,7 @@ def prepare_model(i: int):
             x_name[i_] = "Vasopressor"
         if feature_name == r"\beta-blockers":
             x_name[i_] = r"$\beta$-blockers"
-    # In[] 读取数据
+
     top_len = top_lens[i]
     # read raw data
     x_train, y_train, x_test, y_test, x_validate, y_validate = P.x_train, P.y_train, P.x_test, P.y_test, P.x_validate, P.y_validate
@@ -45,11 +43,11 @@ def prepare_model(i: int):
     # got top n features
     x_train, x_test, x_validate = x_train[:, :top_len], x_test[:, :top_len], x_validate[:, :top_len]
     index, x_name = index[:top_len], x_name[:top_len]
+    
     if load_existed:
         with open(model_pickle_names[i], 'rb') as f:
             model = pickle.load(f)
     else:
-        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[i])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[i],"wb") as f:
@@ -62,7 +60,7 @@ def draw_force_plot(i: int, sample: list):
         P = pickle.load(open(data_pickle_name, "rb"))
         feature = pickle.load(open(feature_pickles[i], "rb"))
     else:
-        P = Load_Data()  # 数据
+        P = Load_Data()  # Data
         pickle.dump(P, open(data_pickle_name, "wb"))
         feature = save_read_data().read(feature_pickle_names[i])
         pickle.dump(feature, open(feature_pickles[i], "wb"))
@@ -73,7 +71,7 @@ def draw_force_plot(i: int, sample: list):
             x_name[i_] = "Vasopressor"
         if feature_name == r"\beta-blockers":
             x_name[i_] = r"$\beta$-blockers"
-    # In[] 读取数据
+    
     top_len = top_lens[i]
     # read raw data
     x_train, y_train, x_test, y_test, x_validate, y_validate = P.x_train, P.y_train, P.x_test, P.y_test, P.x_validate, P.y_validate
@@ -82,11 +80,11 @@ def draw_force_plot(i: int, sample: list):
     # got top n features
     x_train, x_test, x_validate = x_train[:, :top_len], x_test[:, :top_len], x_validate[:, :top_len]
     index, x_name = index[:top_len], x_name[:top_len]
+    
     if load_existed:
         with open(model_pickle_names[i], 'rb') as f:
             model = pickle.load(f)
     else:
-        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[i])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[i],"wb") as f:
@@ -99,9 +97,8 @@ def draw_force_plot(i: int, sample: list):
     sample = P.standarlize.apply_index(raw_sample, index)
 
     predict_prob = model.predict_proba(sample)[:, 1]
-    # sample_index = 0
+    
     plt.figure()
-    # 使用 P.seed，该变量也假设通过 read_toolbox 间接导入或在 P 对象中可用
     model_test_explainer = shap.Explainer(model4shap, masker=x_train, feature_names=x_name, seed=P.seed)
     model_test_shap = model_test_explainer(sample)[0]
     model_test_shap.display_data = np.around(P.standarlize.reversed(sample, index), decimals=2)
@@ -111,7 +108,6 @@ def draw_force_plot(i: int, sample: list):
                      matplotlib=True, show=False)
 
     literal_feature_name = "".join([char for char in x_name if char.isalpha()])
-    # 使用导入的全局变量 name 和 sampler_suffix
     file_name = f'./picture/{sampler_suffix}_/17_{name[i]}_{literal_feature_name}_predict_force_plot.png'
     if Path(file_name).exists():
         Path(file_name).unlink()
@@ -126,7 +122,7 @@ def load_app(model_index: int):
         P = pickle.load(open(data_pickle_name, "rb"))
         feature = pickle.load(open(feature_pickles[model_index], "rb"))
     else:
-        P = Load_Data()  # 数据
+        P = Load_Data()  # Data
         pickle.dump(P, open(data_pickle_name, "wb"))
         feature = save_read_data().read(feature_pickle_names[model_index])
         pickle.dump(feature, open(feature_pickles[model_index], "wb"))
@@ -137,7 +133,7 @@ def load_app(model_index: int):
             x_name[i_] = "Vasopressor"
         if feature_name == r"\beta-blockers":
             x_name[i_] = r"$\beta$-blockers"
-    # In[] 读取数据
+
     top_len = top_lens[model_index]
     # read raw data
     x_train, y_train, x_test, y_test, x_validate, y_validate = P.x_train, P.y_train, P.x_test, P.y_test, P.x_validate, P.y_validate
@@ -146,11 +142,11 @@ def load_app(model_index: int):
     # got top n features
     x_train, x_test, x_validate = x_train[:, :top_len], x_test[:, :top_len], x_validate[:, :top_len]
     index, x_name = index[:top_len], x_name[:top_len]
+    
     if load_existed:
         with open(model_pickle_names[model_index], 'rb') as f:
             model = pickle.load(f)
     else:
-        # 使用导入的全局变量 MM
         model = copy.deepcopy(MM[model_index])
         model = model.fit(x_train, y_train)
         with open(model_pickle_names[model_index],"wb") as f:
@@ -159,23 +155,17 @@ def load_app(model_index: int):
     model_name = name[model_index]
     feature_names = x_name
 
-    # 假设 feature_display_info.xlsx 存在
     data = pd.read_excel("./feature_display_info.xlsx")
     feature_dict = data.set_index('feature_name').to_dict('index')
 
-    # Streamlit 标题修改
     st.title("CKM Mortality Predictor for ICU")
 
     input_features = list()
     print(feature_names)
     for feature_name in feature_names:
         print(feature_name)
-        # if feature_name == "Vasopressor":
-        #     feature_name = "Vasoactive"
         if feature_name == r"$\beta$-blockers":
             feature_name = r"\beta-blockers"
-        # if feature_name == "ACEI_ARB":
-        #     feature_name = "ACEI/ARB"
 
         feature_info = feature_dict.get(feature_name,None)
         if feature_info is None:
@@ -188,6 +178,7 @@ def load_app(model_index: int):
         display_units = feature_info["units"]
         display_units = f"units: {display_units}"if isinstance(display_units, str) else ""
         display_content = f"{display_name}\t{display_units} "
+        
         feature_i = 0.0
         categories = []
         for i in range(5):
@@ -195,54 +186,56 @@ def load_app(model_index: int):
             if isinstance(category_i,float) and np.isnan(category_i):
                 continue
             categories.append(category_i)
+        
+        # UPDATED INPUT LOGIC FROM S18_predict_app
         if display_type == "int":
-            feature_i = st.number_input(display_content, min_value=0)
-            # print(f"{display_name},type:{display_type}, value:{feature_i}")
+            # Keep: If feature is Age, allow 3 decimal input
+            if feature_name == "Age":
+                feature_i = st.number_input(display_content, min_value=0.0, format="%.3f")
+            else:
+                feature_i = st.number_input(display_content, min_value=0)
             feature_i = float(feature_i)
         elif display_type == "float":
-            feature_i = st.number_input(display_content, min_value=0.0)
-            # print(f"{display_name},type:{display_type}, value:{feature_i}")
+            # Keep: If feature is Age, allow 3 decimal input
+            if feature_name == "Age":
+                feature_i = st.number_input(display_content, min_value=0.0, format="%.3f")
+            else:
+                feature_i = st.number_input(display_content, min_value=0.0)
             feature_i = float(feature_i)
-        # elif display_type == "bool":
-        #     feature_i = st.checkbox(display_content)
-        #     print(f"{display_name},type:{display_type}, value:{feature_i}")
-        #     feature_i = float(feature_i)
         elif display_type == "category" or display_type == "bool":
             feature_i = st.selectbox(display_content, categories)
-            # print(f"{display_name},type:{display_type}, value:{feature_i}")
             for i,category_i in enumerate(categories):
                 if feature_i != category_i:
                     continue
                 feature_i = float(i)
-
         else:
             continue
-        # print(feature_i)
+        
         input_features.append(feature_i)
 
-    # print(input_features)
-    i # 保留与原始文件一致的变量
+    i # Preserve variable from original context
     if st.button("Execute Model Analyze"):
         force_plot_path, predict_prob = draw_force_plot(i=model_index, sample=input_features)
 
-        # 获取预测概率数值
+        # Get probability value
         prob_value = predict_prob[0]
 
         # -------------------------------------------------------
-        # 最优阈值设定
-        optimal_threshold = 0.5526
+        # UPDATED THRESHOLD FROM S18_predict_app
+        optimal_threshold = 0.5581
         # -------------------------------------------------------
 
         st.markdown("### Prediction Result")
-        st.write(f"**Predicted Mortality Probability:** {prob_value:.4f} ({(prob_value*100):.2f}%)")
+        # UPDATED FORMATTING
+        st.write(f"**Predicted Mortality Probability:** {prob_value:.3f} ({(prob_value*100):.1f}%)")
 
-        # 逻辑判断：显示高危或低危
+        # Logic for High/Low Risk
         if prob_value > optimal_threshold:
-            # 高风险提示 (红色背景)
+            # High Risk (Red)
             st.error(f"⚠️ **HIGH RISK** (Probability > {optimal_threshold})")
             st.markdown(f"**Clinical Implication:** The patient's mortality risk exceeds the optimal decision threshold ({optimal_threshold}). Intensive monitoring is recommended.")
         else:
-            # 低风险提示 (绿色背景)
+            # Low Risk (Green)
             st.success(f"✅ **LOW RISK** (Probability ≤ {optimal_threshold})")
             st.markdown(f"**Clinical Implication:** The patient's mortality risk is below the optimal decision threshold.")
 
@@ -253,8 +246,3 @@ def load_app(model_index: int):
 
 if "__main__" == __name__:
     load_app(1)
-# sample = [0,2,0,1,70.62,1]
-# draw_force_plot(1,sample)
-
-# sample = [0,2,0,1,70.62,1]
-# draw_force_plot(1,sample)
