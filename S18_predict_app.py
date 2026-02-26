@@ -16,6 +16,8 @@ def prepare_model(i: int):
         pickle.dump(feature, open(feature_pickles[i], "wb"))
 
 
+
+
     # 提取特征
     index, x_name = feature.index[:], feature.x_name[:]
 
