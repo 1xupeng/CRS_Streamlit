@@ -205,6 +205,7 @@ def load_app(model_index: int):
         
         display_content = f"{display_name}\t{display_units} "
         
+        
         feature_i = 0.0
         categories = []
         
