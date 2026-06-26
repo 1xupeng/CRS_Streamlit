@@ -41,7 +41,7 @@ def prepare_model(i: int):
         if feature_name == "Vasoactive":
             x_name[i_] = "Vasopressor"
         if feature_name == r"\beta-blockers":
-            x_name[i_] = r"$\beta$-blockers"
+             x_name[i_] = r"$\beta$-blockers" 
 
     top_len = top_lens[i]
     x_train, y_train, x_test, y_test, x_validate, y_validate = P.x_train, P.y_train, P.x_test, P.y_test, P.x_validate, P.y_validate
@@ -108,8 +108,8 @@ def draw_force_plot(i: int, sample: list):
     model_test_explainer = shap.Explainer(model4shap, masker=x_train, feature_names=x_name, seed=P.seed)
     model_test_shap = model_test_explainer(sample_scaled)[0]
 
-    # 同步 S18app 的逻辑：设置显示数据的保留位数为 2 位
-    model_test_shap.display_data = np.around(P.standarlize.reversed(sample_scaled, index), decimals=2)
+    # 【修改处 1】同步 S18 的逻辑：设置显示数据的保留位数为 3 位
+    model_test_shap.display_data = np.around(P.standarlize.reversed(sample_scaled, index), decimals=3)
 
     shap.plots.force(model_test_shap, feature_names=x_name, matplotlib=True, show=False)
 
@@ -185,9 +185,15 @@ def load_app(model_index: int):
 
     st.title("CRAS Mortality Predictor for ICU")
 
+    # 【修改处 2】提前定义最优阈值，并同步 S18 在页面标题下方显示当前模型和最优阈值的样式
+    optimal_threshold = 0.393
+    st.markdown(
+        f"*Current Model Profile:* **{name[model_index]}** (Calibrated) | "
+        f"*Optimal Decision Threshold:* **{optimal_threshold:.3f}**"
+    )
+
     input_features = list()
     for feature_name in x_name:
-        
         lookup_name = r"\beta-blockers" if feature_name == r"$\beta$-blockers" else feature_name
         
         feature_info = feature_dict.get(lookup_name, None)
@@ -205,9 +211,6 @@ def load_app(model_index: int):
         
         display_content = f"{display_name}\t{display_units} "
         
-
-        
-
         feature_i = 0.0
         categories = []
         
@@ -223,14 +226,12 @@ def load_app(model_index: int):
             else:
                 feature_i = st.number_input(display_content, min_value=0, key=feature_name)
             feature_i = float(feature_i)
-            
         elif display_type == "float":
             if lookup_name == "Age":
                 feature_i = st.number_input(display_content, min_value=0.0, format="%.3f", key=feature_name)
             else:
                 feature_i = st.number_input(display_content, min_value=0.0, key=feature_name)
             feature_i = float(feature_i)
-            
         elif display_type == "category" or display_type == "bool":
             feature_i = st.selectbox(display_content, categories, key=feature_name)
             for i, category_i in enumerate(categories):
@@ -247,9 +248,6 @@ def load_app(model_index: int):
             force_plot_path, predict_prob = draw_force_plot(i=model_index, sample=input_features)
             prob_value = predict_prob[0]
             
-            # 将最优阈值固定为 0.393
-            optimal_threshold = 0.393
-
             st.markdown("### Prediction Result")
             st.write(f"**Predicted Mortality Probability:** {prob_value:.3f} ({(prob_value*100):.1f}%)")
 
