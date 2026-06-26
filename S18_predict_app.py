@@ -108,7 +108,7 @@ def draw_force_plot(i: int, sample: list):
     model_test_explainer = shap.Explainer(model4shap, masker=x_train, feature_names=x_name, seed=P.seed)
     model_test_shap = model_test_explainer(sample_scaled)[0]
 
-    # 【修改处 1】同步 S18 的逻辑：设置显示数据的保留位数为 3 位
+    # 设置显示数据的保留位数为 3 位
     model_test_shap.display_data = np.around(P.standarlize.reversed(sample_scaled, index), decimals=3)
 
     shap.plots.force(model_test_shap, feature_names=x_name, matplotlib=True, show=False)
@@ -185,12 +185,8 @@ def load_app(model_index: int):
 
     st.title("CRAS Mortality Predictor for ICU")
 
-    # 【修改处 2】提前定义最优阈值，并同步 S18 在页面标题下方显示当前模型和最优阈值的样式
+    # 【修改处】仅在后台定义固定最优阈值，已删除 st.markdown 界面渲染显示代码
     optimal_threshold = 0.393
-    st.markdown(
-        f"*Current Model Profile:* **{name[model_index]}** (Calibrated) | "
-        f"*Optimal Decision Threshold:* **{optimal_threshold:.3f}**"
-    )
 
     input_features = list()
     for feature_name in x_name:
